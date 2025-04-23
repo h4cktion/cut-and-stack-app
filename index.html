@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Cut & Stack</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    
+    .file-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    
+    .file-path {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+      word-break: break-all;
+    }
+    
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    button:disabled {
+      background-color: #95a5a6;
+      cursor: not-allowed;
+    }
+    
+    #process-btn {
+      background-color: #2ecc71;
+      font-size: 16px;
+      padding: 12px 24px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    #process-btn:hover {
+      background-color: #27ae60;
+    }
+    
+    #status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    
+    .success {
+      background-color: #d5f5e3;
+      color: #27ae60;
+    }
+    
+    .error {
+      background-color: #fadbd8;
+      color: #c0392b;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PDF Cut & Stack</h1>
+    
+    <div class="file-section">
+      <h3>Fichier PDF source</h3>
+      <button id="select-input">Sélectionner le PDF</button>
+      <div id="input-path" class="file-path">Aucun fichier sélectionné</div>
+    </div>
+    
+    <div class="file-section">
+      <h3>Dossier de sortie</h3>
+      <button id="select-output">Modifier le dossier</button>
+      <div id="output-path" class="file-path">Même dossier que le fichier source</div>
+    </div>
+    
+    <button id="process-btn" disabled>Générer le PDF</button>
+    
+    <div id="status" style="display: none;"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const path = require('path');
+    
+    let inputPath = null;
+    let outputFolder = null;
+    
+    document.getElementById('select-input').addEventListener('click', async () => {
+      const filePath = await ipcRenderer.invoke('select-input-file');
+      if (filePath) {
+        inputPath = filePath;
+        document.getElementById('input-path').textContent = filePath;
+        
+        // Définir automatiquement le dossier de sortie comme le dossier du fichier d'entrée
+        outputFolder = path.dirname(filePath);
+        document.getElementById('output-path').textContent = outputFolder;
+        
+        updateProcessButton();
+      }
+    });
+    
+    document.getElementById('select-output').addEventListener('click', async () => {
+      const folder = await ipcRenderer.invoke('select-output-folder');
+      if (folder) {
+        outputFolder = folder;
+        document.getElementById('output-path').textContent = folder;
+        updateProcessButton();
+      }
+    });
+    
+    document.getElementById('process-btn').addEventListener('click', async () => {
+      const statusEl = document.getElementById('status');
+      const processBtn = document.getElementById('process-btn');
+      
+      // Afficher l'état "En cours..."
+      statusEl.className = '';
+      statusEl.innerHTML = '<span class="loading"></span> Traitement en cours...';
+      statusEl.style.display = 'block';
+      
+      // Désactiver le bouton pendant le traitement
+      processBtn.disabled = true;
+      
+      try {
+        const result = await ipcRenderer.invoke('process-pdf', inputPath, outputFolder);
+        
+        if (result.success) {
+          statusEl.className = 'success';
+          statusEl.textContent = result.message;
+        } else {
+          statusEl.className = 'error';
+          statusEl.textContent = result.message;
+        }
+      } catch (error) {
+        statusEl.className = 'error';
+        statusEl.textContent = `Une erreur est survenue : ${error.message}`;
+      }
+      
+      // Réactiver le bouton
+      processBtn.disabled = false;
+    });
+    
+    function updateProcessButton() {
+      const button = document.getElementById('process-btn');
+      button.disabled = !(inputPath && outputFolder);
+    }
+  </script>
+</body>
+</html>

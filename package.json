@@ -1,0 +1,33 @@
+{
+  "name": "pdf-cut-stack-app",
+  "version": "1.0.0",
+  "description": "Application pour faire du cut and stack de PDF",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "keywords": ["pdf", "electron", "cut-and-stack"],
+  "author": "Votre Nom",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
+  },
+  "build": {
+    "appId": "com.yourname.pdfcutstack",
+    "productName": "PDF Cut & Stack",
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}
