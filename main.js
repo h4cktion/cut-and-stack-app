@@ -1,4 +1,4 @@
-// main.js - Avec la modification pour sélectionner un dossier de sortie
+
 
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
@@ -34,7 +34,7 @@ app.on('activate', () => {
   }
 });
 
-// Fonction pour sélectionner un fichier PDF d'entrée
+
 ipcMain.handle('select-input-file', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
@@ -47,7 +47,7 @@ ipcMain.handle('select-input-file', async () => {
   return null;
 });
 
-// Fonction pour sélectionner un dossier de sortie (au lieu d'un fichier)
+
 ipcMain.handle('select-output-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory']
@@ -59,10 +59,10 @@ ipcMain.handle('select-output-folder', async () => {
   return null;
 });
 
-// Fonction pour traiter le PDF
+
 ipcMain.handle('process-pdf', async (event, inputPath, outputFolder) => {
   try {
-    // Générer le nom du fichier de sortie basé sur le fichier d'entrée
+    
     const inputFileName = path.basename(inputPath);
     const inputFileNameWithoutExt = path.parse(inputFileName).name;
     const outputPath = path.join(outputFolder, `${inputFileNameWithoutExt}_output.pdf`);
@@ -74,7 +74,7 @@ ipcMain.handle('process-pdf', async (event, inputPath, outputFolder) => {
   }
 });
 
-// Votre fonction de traitement PDF (adaptée pour Electron)
+
 async function cutAndStackPDF(inputPath, outputPath) {
   const existingPdfBytes = fs.readFileSync(inputPath);
   const pdfDoc = await PDFDocument.load(existingPdfBytes);

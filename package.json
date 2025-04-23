@@ -8,7 +8,7 @@
     "build": "electron-builder --win"
   },
   "keywords": ["pdf", "electron", "cut-and-stack"],
-  "author": "Votre Nom",
+  "author": "Wandolski Matthieu",
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.0.0",
@@ -18,7 +18,7 @@
     "pdf-lib": "^1.17.1"
   },
   "build": {
-    "appId": "com.yourname.pdfcutstack",
+    "appId": "com.wandolski.pdfcutstack",
     "productName": "PDF Cut & Stack",
     "win": {
       "target": "nsis",

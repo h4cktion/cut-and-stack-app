@@ -138,7 +138,6 @@
         inputPath = filePath;
         document.getElementById('input-path').textContent = filePath;
         
-        // Définir automatiquement le dossier de sortie comme le dossier du fichier d'entrée
         outputFolder = path.dirname(filePath);
         document.getElementById('output-path').textContent = outputFolder;
         
@@ -159,12 +158,10 @@
       const statusEl = document.getElementById('status');
       const processBtn = document.getElementById('process-btn');
       
-      // Afficher l'état "En cours..."
       statusEl.className = '';
       statusEl.innerHTML = '<span class="loading"></span> Traitement en cours...';
       statusEl.style.display = 'block';
       
-      // Désactiver le bouton pendant le traitement
       processBtn.disabled = true;
       
       try {
@@ -182,7 +179,6 @@
         statusEl.textContent = `Une erreur est survenue : ${error.message}`;
       }
       
-      // Réactiver le bouton
       processBtn.disabled = false;
     });
     
