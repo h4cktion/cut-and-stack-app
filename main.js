@@ -75,7 +75,8 @@ ipcMain.handle('process-pdf', async (event, inputPath, outputFolder) => {
 });
 
 
-async function cutAndStackPDF(inputPath, outputPath) {
+
+async function cutAndStackPDF(inputPath, outputPath, invertPages = true) {
   const existingPdfBytes = fs.readFileSync(inputPath);
   const pdfDoc = await PDFDocument.load(existingPdfBytes);
   const outputPdf = await PDFDocument.create();
@@ -90,8 +91,18 @@ async function cutAndStackPDF(inputPath, outputPath) {
     const halfHeight = height / 2;
     
     for (let pos = 0; pos < pagesPerSheet; pos++) {
-      const idx = group + pos * groups;
-      if (idx >= totalPages) continue;
+      // Si inversion demandée, on inversera l'ordre des pages
+      let idx;
+      if (invertPages) {
+        // Calcul de l'index en ordre inverse
+        idx = totalPages - 1 - (group + pos * groups);
+      } else {
+        // Calcul original de l'index
+        idx = group + pos * groups;
+      }
+      
+      // Vérification que l'index est valide
+      if (idx < 0 || idx >= totalPages) continue;
       
       const [copiedPage] = await outputPdf.copyPages(pdfDoc, [idx]);
       const embeddedPage = await outputPdf.embedPage(copiedPage); 
@@ -113,3 +124,42 @@ async function cutAndStackPDF(inputPath, outputPath) {
   fs.writeFileSync(outputPath, pdfBytes);
   return outputPath;
 }
+
+// async function cutAndStackPDF(inputPath, outputPath) {
+//   const existingPdfBytes = fs.readFileSync(inputPath);
+//   const pdfDoc = await PDFDocument.load(existingPdfBytes);
+//   const outputPdf = await PDFDocument.create();
+//   const totalPages = pdfDoc.getPageCount();
+//   const pagesPerSheet = 4;
+//   const groups = Math.ceil(totalPages / pagesPerSheet);
+  
+//   for (let group = 0; group < groups; group++) {
+//     const newPage = outputPdf.addPage([842, 595]); // A4 paysage
+//     const { width, height } = newPage.getSize();
+//     const halfWidth = width / 2;
+//     const halfHeight = height / 2;
+    
+//     for (let pos = 0; pos < pagesPerSheet; pos++) {
+//       const idx = group + pos * groups;
+//       if (idx >= totalPages) continue;
+      
+//       const [copiedPage] = await outputPdf.copyPages(pdfDoc, [idx]);
+//       const embeddedPage = await outputPdf.embedPage(copiedPage); 
+//       const scaledWidth = embeddedPage.width;
+//       const scaledHeight = embeddedPage.height;
+//       const x = (pos % 2) * halfWidth;
+//       const y = pos < 2 ? halfHeight : 0;
+      
+//       newPage.drawPage(embeddedPage, {
+//         x: x + (halfWidth - scaledWidth),
+//         y: y + (halfHeight - scaledHeight),
+//         width: scaledWidth,
+//         height: scaledHeight,
+//       });
+//     }
+//   }
+  
+//   const pdfBytes = await outputPdf.save();
+//   fs.writeFileSync(outputPath, pdfBytes);
+//   return outputPath;
+// }
